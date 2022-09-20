@@ -4,8 +4,11 @@ from fastapi import FastAPI, Path
 from contacts import menu
 from models import *
 from database import *
+from mangum import Mangum
 
 app = FastAPI()
+
+handler = Mangum(app)
 
 @app.get("/")
 def hello_world_root():
