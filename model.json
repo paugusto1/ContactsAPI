@@ -1,0 +1,159 @@
+{
+    "$id": "https://catz.org/schema/api/data/catRequest.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Contacts",
+    "description": "Contact API request definition.",
+    "type": "object",
+    "definitions": {
+      "addressSingle": {
+        "description": "Defines the city, code and number.",
+        "type": "object",
+        "properties": {
+            "apartment": {
+                "description": "Contact's city",
+                "type": "string"
+            },
+            "street": {
+                "description": "Contact's street",
+                "type": "string"
+            },
+            "city": {
+                "description": "Contact's city",
+                "type": "string"
+            },
+            "state": {
+                "description": "Contact's state",
+                "type": "string"
+            },
+            "postalCode": {
+                "description": "Postal code",
+                "type": "string"
+            },
+            "country": {
+                "description": "Country",
+                "type": "string"
+            }
+        },
+        "additionalProperties": false
+      },
+      "address": {
+        "description": "Defines a list of addresses.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/addressSingle"
+        }
+      },
+      "emailSingle": {
+        "description": "Defines the email and email type.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "description": "Contact's email type",
+                "type": "string"
+            },
+            "value": {
+                "description": "Contact's email",
+                "type": "string",
+                "format": "email"
+            }
+        },
+        "required": ["type", "value"],
+        "additionalProperties": false
+      },
+      "email": {
+		"description": "Defines a list of emails.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/emailSingle"
+      }},
+      "phoneNumberSingle": {
+        "description": "Defines the phone and phone type.",
+        "type": "object",
+        "properties": {
+            "type": {
+                "description": "Contact's phone type",
+                "type": "string"
+            },
+            "value": {
+                "description": "Contact's phone",
+                "type": "string"
+            }
+        },
+        "required": ["type", "value"],
+        "additionalProperties": false
+      },
+      "phoneNumber": {
+        "description": "Defines a list of phone numbers.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/phoneNumberSingle"
+      }
+	  },
+      "personDetails": {
+        "description": "Defines the contact personal details.",
+        "type": "object",
+        "properties": {
+            "firstName": {
+                "description": "Contact's first name",
+                "type": "string"
+            },
+            "lastName": {
+                "description": "Contact's second name",
+                "type": "string"
+            },
+            "dateOfBirth": {
+                "description": "Contact's birthdate",
+                "type": "string",
+                "format": "date"
+            }
+        },
+        "required": ["firstName", "lastName"],
+        "additionalProperties": false
+      },
+
+      "contact": {
+        "description": "Defines the information of one contact.",
+        "type": "object",
+
+        "properties": {
+        "id": {
+          "description": "Contact id.",
+          "type": "int"
+        },
+        "personDetails": {
+          "description": "Contact details.",
+          "$ref": "#/definitions/personDetails"
+        },
+        "company": {
+          "description": "Contact's company",
+          "type": "string"
+        },
+        "profileImage": {
+          "description": "Contact's profile image",
+          "type": "string"
+        },
+        "email": {
+          "description": "Contact emails",
+          "$ref": "#/definitions/email"
+        },
+        "phoneNumber": {
+          "description": "Contact phonenumbers",
+          "$ref": "#/definitions/phoneNumber"
+        },
+        "address": {
+          "description": "List of contact addresses.",
+          "$ref": "#/definitions/address"
+        }
+      },
+      "required": ["personDetails", "email"],
+      "additionalProperties": false
+        }
+    },
+
+      "description": "Defines a list of contacts.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/contact"
+      },
+    "additionalProperties": false
+}
