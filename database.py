@@ -3,6 +3,7 @@
 # Now we will import that package
 import pymysql
 from models import *
+import json
 
 # We will use connect() to connect to RDS Instance
 # host is the endpoint of your RDS instance
@@ -146,15 +147,40 @@ def initialPopulation(cursor):
     sql = ''' insert into Country (name) values('BRAZIL')'''
     cursor.execute(sql)
 
-    state = ["Acre","Alagoas","Amapá","Amazonas","Bahia","Ceará","Distrito Federal","Espírito Santo","Goiás",
-             "Maranhão","Mato Grosso","Mato Grosso do Sul","Minas Gerais","Pará","Paraíba","Paraná","Pernambuco",
-             "Piauí","Rio de Janeiro","Rio Grande do Norte","Rio Grande do Sul","Rondônia","Roraima","Santa Catarina",
-             "São Paulo","Sergipe","Tocantins"]
+    states = {
+        'AC': 'Acre',
+        'AL': 'Alagoas',
+        'AP': 'Amapá',
+        'AM': 'Amazonas',
+        'BA': 'Bahia',
+        'CE': 'Ceará',
+        'DF': 'Distrito Federal',
+        'ES': 'Espírito Santo',
+        'GO': 'Goiás',
+        'MA': 'Maranhão',
+        'MT': 'Mato Grosso',
+        'MS': 'Mato Grosso do Sul',
+        'MG': 'Minas Gerais',
+        'PA': 'Pará',
+        'PB': 'Paraíba',
+        'PR': 'Paraná',
+        'PE': 'Pernambuco',
+        'PI': 'Piauí',
+        'RJ': 'Rio de Janeiro',
+        'RN': 'Rio Grande do Norte',
+        'RS': 'Rio Grande do Sul',
+        'RO': 'Rondônia',
+        'RR': 'Roraima',
+        'SC': 'Santa Catarina',
+        'SP': 'São Paulo',
+        'SE': 'Sergipe',
+        'TO': 'Tocantins'
+    }
 
     typePhone = ["Home","Work"]
     typeEmail = ["Personal", "Work"]
 
-    for i in state:
+    for i in states.keys():
         sql = ''' insert into State (name, fkIdCountry) values('%s', 1)''' % (i.upper())
         cursor.execute(sql)
 
@@ -268,10 +294,38 @@ def initialPopulation(cursor):
     res = cursor.fetchall()
     print(res)
 
+def deleteContact(id):
+
+    cursor, db = getDBCursor()
+
+    results = searchBy(field='id', value=id)
+
+    if results == []:
+        return {'Item': 'Does not exist'}
+
+    sql = '''delete from Email where fkIdContact = %i''' % id
+    cursor.execute(sql)
+    db.commit()
+
+    sql = '''delete from PhoneNumber where fkIdContact = %i''' % id
+    cursor.execute(sql)
+    db.commit()
+
+    sql = '''delete from Address where fkIdContact = %i''' % id
+    cursor.execute(sql)
+    db.commit()
+
+    sql = '''delete from Contact where id = %i''' % id
+    cursor.execute(sql)
+    db.commit()
+
+    return {'Message': 'Item deleted successfully'}
+
 
 def searchBy(field, value):
 
-    value = value.upper()
+    if field is not None and field != 'id':
+        value = value.upper()
 
     cursor, db = getDBCursor()
 
@@ -304,12 +358,19 @@ def searchBy(field, value):
         firstName = '%s' and
         lastName = '%s'
         ''' % (names[0], names[1])
+    elif field == 'id':
+        sql = '''
+        select * from Contact where 
+        id = %s 
+        ''' % (value)
 
 
     if field == 'PhoneNumber' or field == 'Email':
         sql = '''
         select * from Contact where id in (select fkIdContact from %s where value = '%s')  
         ''' % (field, value)
+
+    sql += " order by lastName"
 
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -321,9 +382,12 @@ def searchBy(field, value):
 
     contacts = Contacts(__root__ = elems)
 
-    print(contacts.json())
+    obj = json.loads(contacts.json())
+    json_formatted_str = json.dumps(obj, indent=4)
 
-    return contacts.json()
+    print(json_formatted_str)
+
+    return obj
 
 def returnListAddress(cursor, id):
 
