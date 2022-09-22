@@ -204,10 +204,10 @@ def initialPopulation(cursor):
     sql = ''' insert into Company (name) values('BOSCH')'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE', '1993-09-21', 'pedro_vicente.jpg', 1)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE', '1993-09-21', 'https://4.bp.blogspot.com/-cebXJ9RB6r8/UPCCOoQHf0I/AAAAAAAAAyQ/fnM9_IbeW3U/s1600/pikachu_by_caridea-d3i4jd5.png', 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('AUGUSTO', 'PAULO', '1990-08-20', 'augusto_paulo.jpg', 2)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('AUGUSTO', 'PAULO', '1990-08-20', 'https://assets.b9.com.br/wp-content/uploads/2014/08/bulbasaur.png', 2)'''
     cursor.execute(sql)
 
     sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', '13179213', '0', 2, 1)'''
