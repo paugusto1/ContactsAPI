@@ -42,6 +42,9 @@ def create_contact(contact: Contact):
     if results != []:
         return {'Error': 'Item exists'}
 
+    print(type(contact.email.__root__))
+    addContact(contact)
+
     print(results)
     # item['id'] = contact_id
     #
@@ -51,24 +54,6 @@ def create_contact(contact: Contact):
 @app.delete('/delete-contact/{contact_id}')
 def delete_item(contact_id: int):
     return deleteContact(contact_id)
-
-
-@app.get('/get-by-name')
-def get_item(name: Optional[str] = None):
-
-    search = list(filter(lambda x: x["name"] == name, menu))
-
-    if search == []:
-        return {'item': 'Does not exist'}
-
-    return {'Item': search[0]}
-
-@app.get('/list-menu')
-def list_menu():
-    return {'Menu': menu}
-
-
-
 
 
 # @app.put('/update-item/{item_id}')

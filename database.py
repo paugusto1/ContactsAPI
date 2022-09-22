@@ -107,7 +107,7 @@ def createTables(cursor):
     cursor.execute(sql)
 
     sql = '''
-        CREATE TABLE TypePhone (
+        CREATE TABLE TypePhoneNumber (
             id int NOT NULL AUTO_INCREMENT,
             type varchar(255) NOT NULL,
             PRIMARY KEY (id)
@@ -134,7 +134,7 @@ def createTables(cursor):
             fkIdType int,
             PRIMARY KEY (id),
             FOREIGN KEY (fkIdContact) REFERENCES Contact(id),
-            FOREIGN KEY (fkIdType) REFERENCES TypePhone(id)
+            FOREIGN KEY (fkIdType) REFERENCES TypePhoneNumber(id)
         )'''
     cursor.execute(sql)
 
@@ -177,7 +177,7 @@ def initialPopulation(cursor):
         'TO': 'Tocantins'
     }
 
-    typePhone = ["Home","Work"]
+    typePhone = ["Personal","Work"]
     typeEmail = ["Personal", "Work"]
 
     for i in states.keys():
@@ -185,7 +185,7 @@ def initialPopulation(cursor):
         cursor.execute(sql)
 
     for i in typePhone:
-        sql = ''' insert into TypePhone (type) values('%s')''' % (i.upper())
+        sql = ''' insert into TypePhoneNumber (type) values('%s')''' % (i.upper())
         cursor.execute(sql)
 
     for i in typeEmail:
@@ -264,7 +264,7 @@ def initialPopulation(cursor):
     res = cursor.fetchall()
     print(res)
 
-    sql = '''select * from TypePhone'''
+    sql = '''select * from TypePhoneNumber'''
     cursor.execute(sql)
     res = cursor.fetchall()
     print(res)
@@ -320,6 +320,127 @@ def deleteContact(id):
     db.commit()
 
     return {'Message': 'Item deleted successfully'}
+
+def addEmailPhone(db, cursor, elem, newId, table):
+    sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
+    cursor.execute(sql)
+    res = cursor.fetchall()
+
+    if len(res) == 0:
+        sql = ''' insert into %s (type) values('%s')''' % ('Type' + table, elem.type.upper())
+        cursor.execute(sql)
+        db.commit()
+
+        sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
+        cursor.execute(sql)
+        res = cursor.fetchall()
+
+    typeEmailId = res[0][0]
+
+    sql = '''select id from %s where value = '%s' and fkIdContact = %i and fkIdType = %i'''\
+          % (table, elem.value.upper(), newId, typeEmailId)
+    cursor.execute(sql)
+    res = cursor.fetchall()
+
+    if len(res) == 0:
+        sql = ''' insert into %s (value, fkIdContact, fkIdType) 
+              values('%s', %i, %i)''' % (table, elem.value.upper(), newId, typeEmailId)
+
+        cursor.execute(sql)
+        db.commit()
+
+def addAddress(db, cursor, elem, newId):
+    pass
+    # sql = '''select id from City where id = '%s' ''' % (elem.type.upper())
+    # cursor.execute(sql)
+    # res = cursor.fetchall()
+    #
+    # if len(res) == 0:
+    #     sql = ''' insert into %s (type) values('%s')''' % ('Type' + table, elem.type.upper())
+    #     cursor.execute(sql)
+    #     db.commit()
+    #
+    #     sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
+    #     cursor.execute(sql)
+    #     res = cursor.fetchall()
+    #
+    # typeEmailId = res[0][0]
+    #
+    # sql = '''select id from %s where value = '%s' and fkIdContact = %i and fkIdType = %i'''\
+    #       % (table, elem.value.upper(), newId, typeEmailId)
+    # cursor.execute(sql)
+    # res = cursor.fetchall()
+    #
+    # if len(res) == 0:
+    #     sql = ''' insert into %s (value, fkIdContact, fkIdType)
+    #           values('%s', %i, %i)''' % (table, elem.value.upper(), newId, typeEmailId)
+    #
+    #     cursor.execute(sql)
+    #     db.commit()
+
+def addContact(c):
+
+    cursor, db = getDBCursor()
+
+    sql = '''select id from Company where name = '%s' ''' % c.company.upper()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+
+    if len(res) == 0:
+        sql = ''' insert into Company (name) values('%s')''' % c.company.upper()
+        cursor.execute(sql)
+        db.commit()
+
+        sql = '''select id from Company where name = '%s' ''' % c.company.upper()
+        cursor.execute(sql)
+        res = cursor.fetchall()
+
+    companyId = res[0][0]
+
+    firstName = c.personDetails.firstName.upper()
+    lastName = c.personDetails.lastName.upper()
+    dateOfBirth = c.personDetails.dateOfBirth
+    profileImage = c.profileImage
+
+
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) 
+          values('%s', '%s', '%s', '%s', %i)''' % (firstName, lastName, dateOfBirth, profileImage, companyId)
+
+    cursor.execute(sql)
+    db.commit()
+
+    res = searchBy(field = 'name', value = firstName + '_' + lastName)
+
+    newId = res[0]['id']
+
+
+    for email in c.email.__root__:
+        addEmailPhone(db, cursor, email, newId, 'Email')
+
+    for phone in c.phoneNumber.__root__:
+        addEmailPhone(db, cursor, phone, newId, 'PhoneNumber')
+
+    for add in c.address.__root__:
+        addAddress(db, cursor, add, newId)
+
+    res = searchBy(field = 'name', value = firstName + '_' + lastName)
+
+
+
+    #
+    # for phone in c.phoneNumbers:
+    #     typePhone
+    #     sql = '''select id from City'''
+    #
+    # sql = '''select id from City'''
+    # cursor.execute(sql)
+    # res = cursor.fetchall()
+    #
+    #
+    #
+    # c.personDetails.firstName + '_' + c.personDetails.lastName
+
+    return res
 
 
 def searchBy(field, value):
@@ -424,7 +545,7 @@ def returnListEmailPhone(cursor, field, id):
             ''' % (id)
     elif field == 'phone':
         sql = '''
-            select t.type, p.value from PhoneNumber p, TypePhone t 
+            select t.type, p.value from PhoneNumber p, TypePhoneNumber t 
             where p.fkIdContact = %s and 
             p.fkIdType = t.id  
             ''' % (id)
@@ -472,6 +593,14 @@ def toJson(cursor, reg):
 
 
 if __name__ == '__main__':
+
+    # db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
+    #                      password="12345678")
+    # cursor = db.cursor()
+    #
+    # sql = '''create database ContactDB'''
+    # cursor.execute(sql)
+    # cursor.connection.commit()
 
     cursor, db = getDBCursor()
     restartDB(cursor)
