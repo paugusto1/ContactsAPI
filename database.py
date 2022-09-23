@@ -10,6 +10,38 @@ import json
 # user is the username you have given while creating the RDS instance
 # Password is Master pass word you have given
 
+STATES = {
+        'AC': 'Acre',
+        'AL': 'Alagoas',
+        'AP': 'Amapá',
+        'AM': 'Amazonas',
+        'BA': 'Bahia',
+        'CE': 'Ceará',
+        'DF': 'Distrito Federal',
+        'ES': 'Espírito Santo',
+        'GO': 'Goiás',
+        'MA': 'Maranhão',
+        'MT': 'Mato Grosso',
+        'MS': 'Mato Grosso do Sul',
+        'MG': 'Minas Gerais',
+        'PA': 'Pará',
+        'PB': 'Paraíba',
+        'PR': 'Paraná',
+        'PE': 'Pernambuco',
+        'PI': 'Piauí',
+        'RJ': 'Rio de Janeiro',
+        'RN': 'Rio Grande do Norte',
+        'RS': 'Rio Grande do Sul',
+        'RO': 'Rondônia',
+        'RR': 'Roraima',
+        'SC': 'Santa Catarina',
+        'SP': 'São Paulo',
+        'SE': 'Sergipe',
+        'TO': 'Tocantins'
+    }
+
+IMAGE = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm')
+
 
 def getDBCursor():
     db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
@@ -189,7 +221,7 @@ def initialPopulation(cursor):
         cursor.execute(sql)
 
     for i in typeEmail:
-        sql = ''' insert into TypeEmail (type) values('%s')''' % (i)
+        sql = ''' insert into TypeEmail (type) values('%s')''' % (i.upper())
         cursor.execute(sql)
 
     sql = ''' insert into City (name, fkIdState) values('CAMPINAS', 25)'''
@@ -204,25 +236,34 @@ def initialPopulation(cursor):
     sql = ''' insert into Company (name) values('BOSCH')'''
     cursor.execute(sql)
 
+    sql = ''' insert into Company (name) values('GOOGLE')'''
+    cursor.execute(sql)
+
+    sql = ''' insert into Company (name) values('APPLE')'''
+    cursor.execute(sql)
+
     sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE', '1993-09-21', 'https://4.bp.blogspot.com/-cebXJ9RB6r8/UPCCOoQHf0I/AAAAAAAAAyQ/fnM9_IbeW3U/s1600/pikachu_by_caridea-d3i4jd5.png', 1)'''
     cursor.execute(sql)
 
     sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('AUGUSTO', 'PAULO', '1990-08-20', 'https://assets.b9.com.br/wp-content/uploads/2014/08/bulbasaur.png', 2)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', '13179213', '0', 2, 1)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('MARY', 'SUE', '1990-07-03', 'https://www.pngmart.com/files/13/Pokemon-Charmander-Transparent-PNG.png', 3)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 488', '13179213', '0', 2, 1)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('ANA', 'SANTOS', '1995-11-20', 'https://assets.stickpng.com/images/580b57fcd9996e24bc43c32a.png', 4)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', '13179213', '0', 2, 1)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 2', '13179213', '0', 2, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 3, 488', '13179200', '0', 1, 2)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 7', '13179213', '0', 2, 2)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 4, 488', '13179200', '0', 1, 2)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 9', '13179213', '0', 2, 3)'''
+    cursor.execute(sql)
+
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', '13179200', '0', 1, 4)'''
     cursor.execute(sql)
 
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@HOTMAIL.COM', 1, 1)'''
@@ -237,10 +278,23 @@ def initialPopulation(cursor):
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('AUGUSTO@LENOVO.COM', 2, 2)'''
     cursor.execute(sql)
 
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('MARY@HOTMAIL.COM', 3, 1)'''
+    cursor.execute(sql)
+
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('ANA@APPLE.COM', 4, 2)'''
+    cursor.execute(sql)
+
+
     sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('989230310', 1, 1)'''
     cursor.execute(sql)
 
     sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('38545858', 2, 2)'''
+    cursor.execute(sql)
+
+    sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('12345678', 3, 1)'''
+    cursor.execute(sql)
+
+    sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('87456123', 4, 2)'''
     cursor.execute(sql)
 
 
@@ -350,35 +404,48 @@ def addEmailPhone(db, cursor, elem, newId, table):
         db.commit()
 
 def addAddress(db, cursor, elem, newId):
-    pass
-    # sql = '''select id from City where id = '%s' ''' % (elem.type.upper())
-    # cursor.execute(sql)
-    # res = cursor.fetchall()
-    #
-    # if len(res) == 0:
-    #     sql = ''' insert into %s (type) values('%s')''' % ('Type' + table, elem.type.upper())
-    #     cursor.execute(sql)
-    #     db.commit()
-    #
-    #     sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
-    #     cursor.execute(sql)
-    #     res = cursor.fetchall()
-    #
-    # typeEmailId = res[0][0]
-    #
-    # sql = '''select id from %s where value = '%s' and fkIdContact = %i and fkIdType = %i'''\
-    #       % (table, elem.value.upper(), newId, typeEmailId)
-    # cursor.execute(sql)
-    # res = cursor.fetchall()
-    #
-    # if len(res) == 0:
-    #     sql = ''' insert into %s (value, fkIdContact, fkIdType)
-    #           values('%s', %i, %i)''' % (table, elem.value.upper(), newId, typeEmailId)
-    #
-    #     cursor.execute(sql)
-    #     db.commit()
 
-def addContact(c):
+
+    stateId = list(STATES.keys()).index(elem.state) + 1
+    cityName = elem.city.upper()
+
+    sql = '''select id from City where name = '%s' and fkIdState = %i''' \
+          % (cityName, stateId)
+    cursor.execute(sql)
+    res = cursor.fetchall()
+
+    if len(res) == 0:
+        sql = ''' insert into City(name, fkIdState) values('%s', %i)''' % (cityName, stateId)
+        cursor.execute(sql)
+        db.commit()
+
+        sql = '''select id from City where name = '%s' and fkIdState = %i''' \
+              % (cityName, stateId)
+        cursor.execute(sql)
+        res = cursor.fetchall()
+
+    cityId= res[0][0]
+
+    address = elem.street.upper()
+    postalCode = elem.postalCode.upper()
+    apartment = elem.apartment.upper()
+
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) 
+          values('%s', '%s', '%s', %i, %i)''' % (address, postalCode, apartment, cityId, newId)
+
+    print(sql)
+
+    cursor.execute(sql)
+    db.commit()
+
+    # sql = '''select id from Address where postalCode = '%s' and address = '%s' and
+    #       fkIdContact = %i ''' % (postalCode, address, newId)
+    # cursor.execute(sql)
+    #
+    # res = cursor.fetchall()
+
+
+def addContact(c, updating = False):
 
     cursor, db = getDBCursor()
 
@@ -397,22 +464,43 @@ def addContact(c):
 
     companyId = res[0][0]
 
+
+
     firstName = c.personDetails.firstName.upper()
     lastName = c.personDetails.lastName.upper()
     dateOfBirth = c.personDetails.dateOfBirth
     profileImage = c.profileImage
 
+    if not updating:
+        sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) 
+              values('%s', '%s', '%s', '%s', %i)''' % (firstName, lastName, dateOfBirth, profileImage, companyId)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) 
-          values('%s', '%s', '%s', '%s', %i)''' % (firstName, lastName, dateOfBirth, profileImage, companyId)
+        cursor.execute(sql)
+        db.commit()
 
-    cursor.execute(sql)
-    db.commit()
+        res = searchBy(field = 'name', value = firstName + '_' + lastName)
 
-    res = searchBy(field = 'name', value = firstName + '_' + lastName)
+        newId = res[0]['id']
+    else:
 
-    newId = res[0]['id']
+        sql = '''update Contact set companyId = %i, dateOfBirth = '%s', profileImage = '%s' where id = %i''' % \
+              (companyId,dateOfBirth, profileImage, int(c.id))
+        cursor.execute(sql)
+        db.commit()
 
+        sql = '''delete from Email where fkIdContact = %i''' % int(c.id)
+        cursor.execute(sql)
+        db.commit()
+
+        sql = '''delete from PhoneNumber where fkIdContact = %i''' % int(c.id)
+        cursor.execute(sql)
+        db.commit()
+
+        sql = '''delete from Address where fkIdContact = %i''' % int(c.id)
+        cursor.execute(sql)
+        db.commit()
+
+        newId = int(c.id)
 
     for email in c.email.__root__:
         addEmailPhone(db, cursor, email, newId, 'Email')
@@ -440,8 +528,7 @@ def addContact(c):
     #
     # c.personDetails.firstName + '_' + c.personDetails.lastName
 
-    return res
-
+    return res[0]
 
 def searchBy(field, value):
 
@@ -569,6 +656,8 @@ def returnListEmailPhone(cursor, field, id):
 
 
 def toJson(cursor, reg):
+
+    print(reg)
 
     id = reg[0]
     personDetails = PersonDetails(firstName= reg[1], lastName=reg[2],dateOfBirth = reg[3])
