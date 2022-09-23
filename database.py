@@ -1,15 +1,12 @@
 #!pip install PyMySQL
 
-# Now we will import that package
+# Database methods used by API to manage Contact
+
 import pymysql
 from models import *
 import json
 
-# We will use connect() to connect to RDS Instance
-# host is the endpoint of your RDS instance
-# user is the username you have given while creating the RDS instance
-# Password is Master pass word you have given
-
+#Brazil States
 STATES = {
         'AC': 'Acre',
         'AL': 'Alagoas',
@@ -40,9 +37,14 @@ STATES = {
         'TO': 'Tocantins'
     }
 
-IMAGE = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm')
+#Image formats, used to validate profileImage value.
+IMAGE = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm',
+         '.tiff', '.rgb', '.pgm', '.png', '.pnm')
 
+#Field allowed to be searched
+FIELDS_SEARCH = ['phone', 'email', 'city', 'state', 'id', 'name']
 
+#Return references for database Contacts - Hosted by AWS
 def getDBCursor():
     db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
                          password="12345678")
@@ -54,6 +56,7 @@ def getDBCursor():
 
     return cursor, db
 
+#Used for test purposes. Reset data base ContactDB
 def restartDB(cursor):
     sql = '''DROP DATABASE ContactDB'''
     cursor.execute(sql)
@@ -64,13 +67,14 @@ def restartDB(cursor):
     cursor.connection.commit()
 
 
+#Set cursor to use data base ContactDB
 def setDatabase(cursor):
 
     sql = '''use ContactDB'''
     cursor.execute(sql)
     cursor.connection.commit()
 
-
+#DB scheme. For more information check ERD available on GITHUB.
 def createTables(cursor):
 
     sql = '''
@@ -174,6 +178,7 @@ def createTables(cursor):
     cursor.execute(sql)
     print(cursor.fetchall())
 
+#For test. Initial population.
 def initialPopulation(cursor):
 
     sql = ''' insert into Country (name) values('BRAZIL')'''
@@ -348,7 +353,15 @@ def initialPopulation(cursor):
     res = cursor.fetchall()
     print(res)
 
+
 def deleteContact(id):
+
+    """
+    deleteContact Remove Contact with informed id (if it exists).
+
+    :param id: describe about parameter p1
+    :return: String with operation result.
+    """
 
     cursor, db = getDBCursor()
 
@@ -375,7 +388,21 @@ def deleteContact(id):
 
     return {'Message': 'Item deleted successfully'}
 
+
 def addEmailPhone(db, cursor, elem, newId, table):
+    """
+    addEmailPhone Add a new email or phone number with the correct references.
+
+    :param db: reference to DB
+    :param cursor: sql cursor execute
+    :param elem: elem to be added to table
+    :param newId: Contact id to use as FK
+    :param table: Table where elem should be added (Email/PhoneNumber)
+    :return: None
+    """
+
+    # Check if Type already exists, if not add it.
+
     sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
     cursor.execute(sql)
     res = cursor.fetchall()
@@ -396,6 +423,8 @@ def addEmailPhone(db, cursor, elem, newId, table):
     cursor.execute(sql)
     res = cursor.fetchall()
 
+    #Add new Email/Phone with the correct FK refs to contact and type
+
     if len(res) == 0:
         sql = ''' insert into %s (value, fkIdContact, fkIdType) 
               values('%s', %i, %i)''' % (table, elem.value.upper(), newId, typeEmailId)
@@ -403,11 +432,24 @@ def addEmailPhone(db, cursor, elem, newId, table):
         cursor.execute(sql)
         db.commit()
 
+
 def addAddress(db, cursor, elem, newId):
 
+    """
+    addAddress Add a new address with the correct references.
 
+    :param db: reference to DB
+    :param cursor: sql cursor execute
+    :param elem: elem to be added to table
+    :param newId: Contact id to use as FK
+    :return: None
+    """
+
+    #Get state id
     stateId = list(STATES.keys()).index(elem.state) + 1
     cityName = elem.city.upper()
+
+    # Check if City already exists, if not add it.
 
     sql = '''select id from City where name = '%s' and fkIdState = %i''' \
           % (cityName, stateId)
@@ -430,24 +472,29 @@ def addAddress(db, cursor, elem, newId):
     postalCode = elem.postalCode.upper()
     apartment = elem.apartment.upper()
 
+    # Add new Address with the correct FK refs to contact and state
+
     sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) 
           values('%s', '%s', '%s', %i, %i)''' % (address, postalCode, apartment, cityId, newId)
 
-    print(sql)
 
     cursor.execute(sql)
     db.commit()
 
-    # sql = '''select id from Address where postalCode = '%s' and address = '%s' and
-    #       fkIdContact = %i ''' % (postalCode, address, newId)
-    # cursor.execute(sql)
-    #
-    # res = cursor.fetchall()
-
 
 def addContact(c, updating = False):
 
+    """
+    addContact Add a Contact and update support tables if necessary.
+
+    :param c: Contact object with the info to be included/updated.
+    :param updating: if True this is a update operation
+    :return: added/updated contact
+    """
+
     cursor, db = getDBCursor()
+
+    #If informed company does not exists created it.
 
     sql = '''select id from Company where name = '%s' ''' % c.company.upper()
     cursor.execute(sql)
@@ -465,11 +512,13 @@ def addContact(c, updating = False):
     companyId = res[0][0]
 
 
-
     firstName = c.personDetails.firstName.upper()
     lastName = c.personDetails.lastName.upper()
     dateOfBirth = c.personDetails.dateOfBirth
     profileImage = c.profileImage
+
+    # Create a new Contact if not updating.
+    # If updating remove all registers of phone, email and address to be included again.
 
     if not updating:
         sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) 
@@ -502,6 +551,8 @@ def addContact(c, updating = False):
 
         newId = int(c.id)
 
+    #Creating register of each phone, email and address
+
     for email in c.email.__root__:
         addEmailPhone(db, cursor, email, newId, 'Email')
 
@@ -513,29 +564,26 @@ def addContact(c, updating = False):
 
     res = searchBy(field = 'name', value = firstName + '_' + lastName)
 
-
-
-    #
-    # for phone in c.phoneNumbers:
-    #     typePhone
-    #     sql = '''select id from City'''
-    #
-    # sql = '''select id from City'''
-    # cursor.execute(sql)
-    # res = cursor.fetchall()
-    #
-    #
-    #
-    # c.personDetails.firstName + '_' + c.personDetails.lastName
+    #Return added/updated contact
 
     return res[0]
 
 def searchBy(field, value):
 
+    """
+    searchBy Search a Contact considering a field and a value.
+
+    :param field: Field to be used as search.
+    :param value: Value to seach.
+    :return: List of contacts found, [] if none.
+    """
+
     if field is not None and field != 'id':
         value = value.upper()
 
     cursor, db = getDBCursor()
+
+    #Define SQL query considering the field value
 
     if field == 'phone':
         field = 'PhoneNumber'
@@ -593,11 +641,17 @@ def searchBy(field, value):
     obj = json.loads(contacts.json())
     json_formatted_str = json.dumps(obj, indent=4)
 
-    print(json_formatted_str)
-
     return obj
 
 def returnListAddress(cursor, id):
+
+    """
+    returnListAddress Return the list of Address related to a contact id.
+
+    :param cursor: Cursor to execute SQL queries
+    :param id: Contact id
+    :return: List of AddressSingle
+    """
 
     sql = '''
             select a.apartment, a.address, c.name, s.name, a.postalCode, co.name from Address a, City c, 
@@ -623,6 +677,14 @@ def returnListAddress(cursor, id):
     return listElem
 
 def returnListEmailPhone(cursor, field, id):
+
+    """
+    returnListEmailPhone Return the list of Phones/Emails related to a contact id.
+
+    :param cursor: Cursor to execute SQL queries
+    :param id: Contact id
+    :return: List of EmailSingle or PhoneNumberSingle
+    """
 
     if field == 'email':
         sql = '''
@@ -657,7 +719,13 @@ def returnListEmailPhone(cursor, field, id):
 
 def toJson(cursor, reg):
 
-    print(reg)
+    """
+    toJson Add a Contact and update support tables if necessary.
+
+    :param cursor: cursor to execute sql commands.
+    :param reg: SQL query reply of a Contact.
+    :return: Contact object representing a json
+    """
 
     id = reg[0]
     personDetails = PersonDetails(firstName= reg[1], lastName=reg[2],dateOfBirth = reg[3])
@@ -680,16 +748,12 @@ def toJson(cursor, reg):
 
     return contact
 
+def startDB():
 
-if __name__ == '__main__':
-
-    # db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
-    #                      password="12345678")
-    # cursor = db.cursor()
-    #
-    # sql = '''create database ContactDB'''
-    # cursor.execute(sql)
-    # cursor.connection.commit()
+    """
+    addContact Reset DB Contact DB to default state (4 Contacts).
+    :return: None
+    """
 
     cursor, db = getDBCursor()
     restartDB(cursor)
@@ -699,19 +763,5 @@ if __name__ == '__main__':
     db.commit()
 
 
-# Create a table
-# sql = '''
-# create table person ( id int not null auto_increment,fname text, lname text, primary key (id) )'''
-# cursor.execute(sql)
-# Check if our table is created or not
-
-# #Output of above will be (('person',),)
-# #Insert some records in the table
-# sql = ''' insert into person(fname, lname) values('%s', '%s')''' % ('XXX', 'YYY')
-# cursor.execute(sql)
-# db.commit()
-# #Lets select the data from above added table
-# sql = '''select * from person'''
-# cursor.execute(sql)
-# cursor.fetchall()
-# #Output of above will be ((1, 'XXX', 'YYY'),)
+if __name__ == '__main__':
+    startDB()
