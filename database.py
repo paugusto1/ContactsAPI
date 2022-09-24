@@ -232,7 +232,7 @@ def initialPopulation(cursor):
     sql = ''' insert into City (name, fkIdState) values('CAMPINAS', 25)'''
     cursor.execute(sql)
 
-    sql = ''' insert into City (name, fkIdState) values('SUMARÉ', 25)'''
+    sql = ''' insert into City (name, fkIdState) values('SUMARE', 25)'''
     cursor.execute(sql)
 
     sql = ''' insert into Company (name) values('ELDORADO')'''
@@ -765,3 +765,5 @@ def startDB():
 
 if __name__ == '__main__':
     startDB()
+
+

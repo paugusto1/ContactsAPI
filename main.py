@@ -97,8 +97,8 @@ def update_contact(contact_id: int, contact: Contact):
 
     # If contact does not exist, create a new one.
     if results == []:
-        return addContact(contact, updating=True)
-    return addContact(contact)
+        return addContact(contact)
+    return addContact(contact, updating=True)
 
 
 def validateContact(contact):
