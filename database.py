@@ -6,7 +6,7 @@ import pymysql
 from models import *
 import json
 
-#Brazil States
+# Brazil States
 STATES = {
         'AC': 'Acre',
         'AL': 'Alagoas',
@@ -37,14 +37,19 @@ STATES = {
         'TO': 'Tocantins'
     }
 
-#Image formats, used to validate profileImage value.
+# Image formats, used to validate profileImage value.
 IMAGE = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm',
          '.tiff', '.rgb', '.pgm', '.png', '.pnm')
 
-#Field allowed to be searched
+# Field allowed to be searched
 FIELDS_SEARCH = ['phone', 'email', 'city', 'state', 'id', 'name']
 
-#Return references for database Contacts - Hosted by AWS
+# Default type values for email/phone
+TYPE_PHONE = ["Personal", "Work"]
+TYPE_EMAIL = ["Personal", "Work"]
+
+
+# Return references for database Contacts - Hosted by AWS
 def getDBCursor():
     db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
                          password="12345678")
@@ -56,7 +61,8 @@ def getDBCursor():
 
     return cursor, db
 
-#Used for test purposes. Reset data base ContactDB
+
+# Used for test purposes. Reset data base ContactDB
 def restartDB(cursor):
     sql = '''DROP DATABASE ContactDB'''
     cursor.execute(sql)
@@ -67,14 +73,15 @@ def restartDB(cursor):
     cursor.connection.commit()
 
 
-#Set cursor to use data base ContactDB
+# Set cursor to use data base ContactDB
 def setDatabase(cursor):
 
     sql = '''use ContactDB'''
     cursor.execute(sql)
     cursor.connection.commit()
 
-#DB scheme. For more information check ERD available on GITHUB.
+
+# DB scheme. For more information check ERD available on GITHUB.
 def createTables(cursor):
 
     sql = '''
@@ -178,54 +185,22 @@ def createTables(cursor):
     cursor.execute(sql)
     print(cursor.fetchall())
 
-#For test. Initial population.
+
+# For test. Initial population.
 def initialPopulation(cursor):
 
     sql = ''' insert into Country (name) values('BRAZIL')'''
     cursor.execute(sql)
 
-    states = {
-        'AC': 'Acre',
-        'AL': 'Alagoas',
-        'AP': 'Amapá',
-        'AM': 'Amazonas',
-        'BA': 'Bahia',
-        'CE': 'Ceará',
-        'DF': 'Distrito Federal',
-        'ES': 'Espírito Santo',
-        'GO': 'Goiás',
-        'MA': 'Maranhão',
-        'MT': 'Mato Grosso',
-        'MS': 'Mato Grosso do Sul',
-        'MG': 'Minas Gerais',
-        'PA': 'Pará',
-        'PB': 'Paraíba',
-        'PR': 'Paraná',
-        'PE': 'Pernambuco',
-        'PI': 'Piauí',
-        'RJ': 'Rio de Janeiro',
-        'RN': 'Rio Grande do Norte',
-        'RS': 'Rio Grande do Sul',
-        'RO': 'Rondônia',
-        'RR': 'Roraima',
-        'SC': 'Santa Catarina',
-        'SP': 'São Paulo',
-        'SE': 'Sergipe',
-        'TO': 'Tocantins'
-    }
-
-    typePhone = ["Personal","Work"]
-    typeEmail = ["Personal", "Work"]
-
-    for i in states.keys():
+    for i in STATES.keys():
         sql = ''' insert into State (name, fkIdCountry) values('%s', 1)''' % (i.upper())
         cursor.execute(sql)
 
-    for i in typePhone:
+    for i in TYPE_PHONE:
         sql = ''' insert into TypePhoneNumber (type) values('%s')''' % (i.upper())
         cursor.execute(sql)
 
-    for i in typeEmail:
+    for i in TYPE_EMAIL:
         sql = ''' insert into TypeEmail (type) values('%s')''' % (i.upper())
         cursor.execute(sql)
 
@@ -247,28 +222,38 @@ def initialPopulation(cursor):
     sql = ''' insert into Company (name) values('APPLE')'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE', '1993-09-21', 'https://4.bp.blogspot.com/-cebXJ9RB6r8/UPCCOoQHf0I/AAAAAAAAAyQ/fnM9_IbeW3U/s1600/pikachu_by_caridea-d3i4jd5.png', 1)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE',
+     '1993-09-21', 
+     'https://4.bp.blogspot.com/-cebXJ9RB6r8/UPCCOoQHf0I/AAAAAAAAAyQ/fnM9_IbeW3U/s1600/pikachu_by_caridea-d3i4jd5.png',
+      1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('AUGUSTO', 'PAULO', '1990-08-20', 'https://assets.b9.com.br/wp-content/uploads/2014/08/bulbasaur.png', 2)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('AUGUSTO', 'PAULO',
+     '1990-08-20', 'https://assets.b9.com.br/wp-content/uploads/2014/08/bulbasaur.png', 2)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('MARY', 'SUE', '1990-07-03', 'https://www.pngmart.com/files/13/Pokemon-Charmander-Transparent-PNG.png', 3)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('MARY', 'SUE', 
+    '1990-07-03', 'https://www.pngmart.com/files/13/Pokemon-Charmander-Transparent-PNG.png', 3)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('ANA', 'SANTOS', '1995-11-20', 'https://assets.stickpng.com/images/580b57fcd9996e24bc43c32a.png', 4)'''
+    sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('ANA', 'SANTOS', 
+    '1995-11-20', 'https://assets.stickpng.com/images/580b57fcd9996e24bc43c32a.png', 4)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 2', '13179213', '0', 2, 1)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 2', '13179213',
+     '0', 2, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 7', '13179213', '0', 2, 2)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 7', '13179213',
+     '0', 2, 2)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 9', '13179213', '0', 2, 3)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 9', '13179213',
+     '0', 2, 3)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', '13179200', '0', 1, 4)'''
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', 
+    '13179200', '0', 1, 4)'''
     cursor.execute(sql)
 
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@HOTMAIL.COM', 1, 1)'''
@@ -289,7 +274,6 @@ def initialPopulation(cursor):
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('ANA@APPLE.COM', 4, 2)'''
     cursor.execute(sql)
 
-
     sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('989230310', 1, 1)'''
     cursor.execute(sql)
 
@@ -301,7 +285,6 @@ def initialPopulation(cursor):
 
     sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('87456123', 4, 2)'''
     cursor.execute(sql)
-
 
     sql = '''select * from Country'''
     cursor.execute(sql)
@@ -359,7 +342,7 @@ def deleteContact(id):
     """
     deleteContact Remove Contact with informed id (if it exists).
 
-    :param id: describe about parameter p1
+    :param id: Id of the contact to be deleted
     :return: String with operation result.
     """
 
@@ -367,7 +350,7 @@ def deleteContact(id):
 
     results = searchBy(field='id', value=id)
 
-    if results == []:
+    if not results:
         return {'Item': 'Does not exist'}
 
     sql = '''delete from Email where fkIdContact = %i''' % id
@@ -423,7 +406,7 @@ def addEmailPhone(db, cursor, elem, newId, table):
     cursor.execute(sql)
     res = cursor.fetchall()
 
-    #Add new Email/Phone with the correct FK refs to contact and type
+    # Add new Email/Phone with the correct FK refs to contact and type
 
     if len(res) == 0:
         sql = ''' insert into %s (value, fkIdContact, fkIdType) 
@@ -445,7 +428,7 @@ def addAddress(db, cursor, elem, newId):
     :return: None
     """
 
-    #Get state id
+    # Get state id
     stateId = list(STATES.keys()).index(elem.state) + 1
     cityName = elem.city.upper()
 
@@ -477,7 +460,6 @@ def addAddress(db, cursor, elem, newId):
     sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) 
           values('%s', '%s', '%s', %i, %i)''' % (address, postalCode, apartment, cityId, newId)
 
-
     cursor.execute(sql)
     db.commit()
 
@@ -494,7 +476,7 @@ def addContact(c, updating = False):
 
     cursor, db = getDBCursor()
 
-    #If informed company does not exists created it.
+    # If informed company does not exists created it.
 
     sql = '''select id from Company where name = '%s' ''' % c.company.upper()
     cursor.execute(sql)
@@ -510,7 +492,6 @@ def addContact(c, updating = False):
         res = cursor.fetchall()
 
     companyId = res[0][0]
-
 
     firstName = c.personDetails.firstName.upper()
     lastName = c.personDetails.lastName.upper()
@@ -551,7 +532,7 @@ def addContact(c, updating = False):
 
         newId = int(c.id)
 
-    #Creating register of each phone, email and address
+    # Creating register of each phone, email and address
 
     for email in c.email.__root__:
         addEmailPhone(db, cursor, email, newId, 'Email')
@@ -564,9 +545,10 @@ def addContact(c, updating = False):
 
     res = searchBy(field = 'name', value = firstName + '_' + lastName)
 
-    #Return added/updated contact
+    # Return added/updated contact
 
     return res[0]
+
 
 def searchBy(field, value):
 
@@ -583,7 +565,7 @@ def searchBy(field, value):
 
     cursor, db = getDBCursor()
 
-    #Define SQL query considering the field value
+    # Define SQL query considering the field value
 
     if field == 'phone':
         field = 'PhoneNumber'
@@ -620,7 +602,6 @@ def searchBy(field, value):
         id = %s 
         ''' % (value)
 
-
     if field == 'PhoneNumber' or field == 'Email':
         sql = '''
         select * from Contact where id in (select fkIdContact from %s where value = '%s')  
@@ -643,6 +624,7 @@ def searchBy(field, value):
 
     return obj
 
+
 def returnListAddress(cursor, id):
 
     """
@@ -662,7 +644,6 @@ def returnListAddress(cursor, id):
             s.fkIdCountry = co.id
             ''' % (id)
 
-
     cursor.execute(sql)
     res = cursor.fetchall()
 
@@ -675,6 +656,7 @@ def returnListAddress(cursor, id):
         listElem.append(addressSingle.dict())
 
     return listElem
+
 
 def returnListEmailPhone(cursor, field, id):
 
@@ -738,7 +720,6 @@ def toJson(cursor, reg):
     cursor.execute(sql)
     company = cursor.fetchall()[0][0]
 
-
     email = returnListEmailPhone(cursor, 'email', id)
     phoneNumber = returnListEmailPhone(cursor, 'phone', id)
     address = returnListAddress(cursor, id)
@@ -748,7 +729,8 @@ def toJson(cursor, reg):
 
     return contact
 
-def startDB():
+
+def startDB(populate = True):
 
     """
     addContact Reset DB Contact DB to default state (4 Contacts).
@@ -759,7 +741,8 @@ def startDB():
     restartDB(cursor)
     setDatabase(cursor)
     createTables(cursor)
-    initialPopulation(cursor)
+    if populate:
+        initialPopulation(cursor)
     db.commit()
 
 

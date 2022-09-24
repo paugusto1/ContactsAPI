@@ -1,12 +1,13 @@
 from typing import Optional
 
 from fastapi import FastAPI, Path, HTTPException
-from contacts import menu
 from models import *
 from database import *
 from mangum import Mangum
 
-description = """
+# File named main.py to fulfill requirements for AWS Lambda
+
+description = """ 
 Contacts API is a API to manage contacts.
 
 ## Users
@@ -38,11 +39,22 @@ app = FastAPI\
 
 handler = Mangum(app)
 
+
 @app.get('/populate-db/test-only')
 def populateDB():
+    """
+    Populate the DB with default register. For test only:
+
+    - **name**: each item must have a name
+    - **description**: a long description
+    - **price**: required
+    - **tax**: if the item doesn't have tax, you can omit this
+    - **tags**: a set of unique tag strings for this item
+    """
 
     startDB()
     return 200
+
 
 @app.get('/get-contacts/{field}/{value}')
 def get_contact(
@@ -53,31 +65,53 @@ def get_contact(
             None,
             description="Fill with value you want to search")):
 
-    if field not in FIELDS_SEARCH:
+    """
+    Search a Contact considering a field and a value.
+
+    - **field**: Field to be used as search.
+    - **value**: Value to seach.
+    """
+
+    if field == '' or value == '':
+        raise HTTPException(status_code=422,
+                            detail="Search can only be done when value and field are informed.")
+
+    if field.lower() not in FIELDS_SEARCH:
         raise HTTPException(status_code=422,
                             detail="Search can only be done with " + str(FIELDS_SEARCH))
 
-
-    results = searchBy(field, value)
+    results = searchBy(field.lower(), value)
 
     return results
 
+
 @app.get('/get-contacts/all')
 def get_contact():
+
+    """
+    Return the list of all contacts, ordered by last name.
+    """
 
     results = searchBy(field = None, value = None)
 
     return results
 
+
 @app.post('/create-contact/')
 def create_contact(contact: Contact):
+
+    """
+    Add a new contact to the database.
+
+    - **contact**: Json representing a contact (Check Pydantic class Contact for details).
+    """
 
     validateContact(contact)
 
     results = searchBy(field = 'name', value = contact.personDetails.firstName + '_' + contact.personDetails.lastName)
 
     # Validating contact duplicated (Considering only one contact of same firstName and lastName can exist).
-    if results != []:
+    if results:
         raise HTTPException(status_code=422,
                             detail="User already exists")
 
@@ -86,30 +120,51 @@ def create_contact(contact: Contact):
 
 @app.delete('/delete-contact/{contact_id}')
 def delete_contact(contact_id: int):
+
+    """
+    Remove Contact with informed id (if it exists).
+
+    - **contact_id**: Id of the contact to be deleted
+    """
+
     return deleteContact(contact_id)
 
 @app.put('/update-contact/{contact_id}/')
 def update_contact(contact_id: int, contact: Contact):
+
+    """
+    Populate the DB with default register. For test only:
+
+    - **contact_id**: Id of the contact to be updated
+    - **contact**: Json representing a contact (Check Pydantic class Contact for details).
+    """
 
     validateContact(contact)
 
     results = searchBy(field = 'id', value = contact_id)
 
     # If contact does not exist, create a new one.
-    if results == []:
+    if not results:
         return addContact(contact)
     return addContact(contact, updating=True)
 
 
 def validateContact(contact):
 
-    #Handle only brazilian addresses
+    """
+    Check the contact for issues with the values for address, profileImage and birthday
+
+    - **contact**: Json representing a contact (Check Pydantic class Contact for details).
+    """
+
+    # Handle only brazilian addresses
 
     for add in contact.address.__root__:
         if add.country.upper() != 'BRAZIL':
             raise HTTPException(status_code=422, detail="Currently, only Brazil addresses allowed")
         if add.state.upper() not in STATES.keys():
-            raise HTTPException(status_code=422, detail="Currently, only Brazil addresses allowed. Use 2 letter notation for states.")
+            raise HTTPException(status_code=422,
+                                detail="Currently, only Brazil addresses allowed. Use 2 letter notation for states.")
 
     # Handle correct image url
     if contact.profileImage != '' and contact.profileImage[-4:] not in IMAGE and contact.profileImage[-5:] not in IMAGE:
