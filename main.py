@@ -40,6 +40,20 @@ app = FastAPI\
 handler = Mangum(app)
 
 
+@app.get('/')
+def index():
+    """
+    Default page. Test connection to DB:
+    """
+
+    try:
+        getDBCursor()
+    except:
+        return "Database connection failed. Try again later."
+
+    return "API is running! Try the available operations."
+
+
 @app.get('/populate-db/test-only')
 def populateDB():
     """

@@ -49,8 +49,12 @@ TYPE_PHONE = ["Personal", "Work"]
 TYPE_EMAIL = ["Personal", "Work"]
 
 
-# Return references for database Contacts - Hosted by AWS
 def getDBCursor():
+    """
+    getDBCursor Return references for database Contacts - Hosted by AWS
+
+    :cursor: Cursor to the DB to be used.
+    """
     db = pymysql.connect(host="databasecontacts.ccf8jotwvwtf.us-east-1.rds.amazonaws.com", user="admin",
                          password="12345678")
     cursor = db.cursor()
@@ -62,8 +66,12 @@ def getDBCursor():
     return cursor, db
 
 
-# Used for test purposes. Reset data base ContactDB
 def restartDB(cursor):
+    """
+    restartDB Used for test purposes. Reset data base ContactDB
+
+    :cursor: Cursor to the DB to be used.
+    """
     sql = '''DROP DATABASE ContactDB'''
     cursor.execute(sql)
     cursor.connection.commit()
@@ -73,16 +81,35 @@ def restartDB(cursor):
     cursor.connection.commit()
 
 
-# Set cursor to use data base ContactDB
 def setDatabase(cursor):
+    """
+    setDatabase Set cursor to use data base ContactDB.
+
+    :cursor: Cursor to the DB to be used.
+    """
 
     sql = '''use ContactDB'''
     cursor.execute(sql)
     cursor.connection.commit()
 
+def executeSQL(sql, cursor):
+    """
+    executeSQL Execute SQL query on the cursor and return results.
 
-# DB scheme. For more information check ERD available on GITHUB.
+    :cursor: Cursor to the DB to be used.
+    :return: SQL query response
+    """
+
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+
 def createTables(cursor):
+    """
+    createTables DB scheme. For more information check ERD available on GITHUB.
+
+    :cursor: Cursor to the DB to be used.
+    """
 
     sql = '''
         CREATE TABLE Country (
@@ -186,8 +213,13 @@ def createTables(cursor):
     print(cursor.fetchall())
 
 
-# For test. Initial population.
 def initialPopulation(cursor):
+
+    """
+    initialPopulation For test. Initial population.
+
+    :cursor: Cursor to the DB to be used.
+    """
 
     sql = ''' insert into Country (name) values('BRAZIL')'''
     cursor.execute(sql)
@@ -210,16 +242,16 @@ def initialPopulation(cursor):
     sql = ''' insert into City (name, fkIdState) values('SUMARE', 25)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Company (name) values('ELDORADO')'''
+    sql = ''' insert into Company (name) values('CRACK AND CODE')'''
     cursor.execute(sql)
 
-    sql = ''' insert into Company (name) values('BOSCH')'''
+    sql = ''' insert into Company (name) values('IT CENTER')'''
     cursor.execute(sql)
 
-    sql = ''' insert into Company (name) values('GOOGLE')'''
+    sql = ''' insert into Company (name) values('PCMANIA')'''
     cursor.execute(sql)
 
-    sql = ''' insert into Company (name) values('APPLE')'''
+    sql = ''' insert into Company (name) values('CINE')'''
     cursor.execute(sql)
 
     sql = ''' insert into Contact (firstName, lastName, dateOfBirth, profileImage, companyId) values('PEDRO', 'VICENTE',
@@ -244,34 +276,34 @@ def initialPopulation(cursor):
      '0', 2, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 7', '13179213',
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 7', '13185213',
      '0', 2, 2)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 9', '13179213',
+    sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 1, 9', '13179211',
      '0', 2, 3)'''
     cursor.execute(sql)
 
     sql = ''' insert into Address (address, postalCode, apartment, fkIdCity, fkIdContact) values('Rua 2, 488', 
-    '13179200', '0', 1, 4)'''
+    '13010010', '0', 1, 4)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@HOTMAIL.COM', 1, 1)'''
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@TEST1.COM', 1, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@LENOVO.COM', 1, 2)'''
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('PEDROV@REST.COM', 1, 2)'''
     cursor.execute(sql)
 
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('AUGUSTO@HOTMAIL.COM', 2, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('AUGUSTO@LENOVO.COM', 2, 2)'''
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('AUGUSTO@ITCODE.COM', 2, 2)'''
     cursor.execute(sql)
 
     sql = ''' insert into Email (value, fkIdContact, fkIdType) values('MARY@HOTMAIL.COM', 3, 1)'''
     cursor.execute(sql)
 
-    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('ANA@APPLE.COM', 4, 2)'''
+    sql = ''' insert into Email (value, fkIdContact, fkIdType) values('ANA@CODE.COM', 4, 2)'''
     cursor.execute(sql)
 
     sql = ''' insert into PhoneNumber (value, fkIdContact, fkIdType) values('989230310', 1, 1)'''
@@ -287,53 +319,43 @@ def initialPopulation(cursor):
     cursor.execute(sql)
 
     sql = '''select * from Country'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from State'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from City'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from Company'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from TypePhoneNumber'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from TypeEmail'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from Address'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from Email'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from PhoneNumber'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
     sql = '''select * from Contact'''
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
     print(res)
 
 
@@ -355,18 +377,16 @@ def deleteContact(id):
 
     sql = '''delete from Email where fkIdContact = %i''' % id
     cursor.execute(sql)
-    db.commit()
 
     sql = '''delete from PhoneNumber where fkIdContact = %i''' % id
     cursor.execute(sql)
-    db.commit()
 
     sql = '''delete from Address where fkIdContact = %i''' % id
     cursor.execute(sql)
-    db.commit()
 
     sql = '''delete from Contact where id = %i''' % id
     cursor.execute(sql)
+
     db.commit()
 
     return {'Message': 'Item deleted successfully'}
@@ -387,8 +407,7 @@ def addEmailPhone(db, cursor, elem, newId, table):
     # Check if Type already exists, if not add it.
 
     sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     if len(res) == 0:
         sql = ''' insert into %s (type) values('%s')''' % ('Type' + table, elem.type.upper())
@@ -396,15 +415,13 @@ def addEmailPhone(db, cursor, elem, newId, table):
         db.commit()
 
         sql = '''select id from %s where type = '%s' ''' % ('Type' + table, elem.type.upper())
-        cursor.execute(sql)
-        res = cursor.fetchall()
+        res = executeSQL(sql, cursor)
 
     typeEmailId = res[0][0]
 
     sql = '''select id from %s where value = '%s' and fkIdContact = %i and fkIdType = %i'''\
           % (table, elem.value.upper(), newId, typeEmailId)
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     # Add new Email/Phone with the correct FK refs to contact and type
 
@@ -436,8 +453,7 @@ def addAddress(db, cursor, elem, newId):
 
     sql = '''select id from City where name = '%s' and fkIdState = %i''' \
           % (cityName, stateId)
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     if len(res) == 0:
         sql = ''' insert into City(name, fkIdState) values('%s', %i)''' % (cityName, stateId)
@@ -446,8 +462,7 @@ def addAddress(db, cursor, elem, newId):
 
         sql = '''select id from City where name = '%s' and fkIdState = %i''' \
               % (cityName, stateId)
-        cursor.execute(sql)
-        res = cursor.fetchall()
+        res = executeSQL(sql, cursor)
 
     cityId= res[0][0]
 
@@ -479,8 +494,7 @@ def addContact(c, updating = False):
     # If informed company does not exists created it.
 
     sql = '''select id from Company where name = '%s' ''' % c.company.upper()
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     if len(res) == 0:
         sql = ''' insert into Company (name) values('%s')''' % c.company.upper()
@@ -488,8 +502,7 @@ def addContact(c, updating = False):
         db.commit()
 
         sql = '''select id from Company where name = '%s' ''' % c.company.upper()
-        cursor.execute(sql)
-        res = cursor.fetchall()
+        res = executeSQL(sql, cursor)
 
     companyId = res[0][0]
 
@@ -516,15 +529,12 @@ def addContact(c, updating = False):
         sql = '''update Contact set companyId = %i, dateOfBirth = '%s', profileImage = '%s' where id = %i''' % \
               (companyId,dateOfBirth, profileImage, int(c.id))
         cursor.execute(sql)
-        db.commit()
 
         sql = '''delete from Email where fkIdContact = %i''' % int(c.id)
         cursor.execute(sql)
-        db.commit()
 
         sql = '''delete from PhoneNumber where fkIdContact = %i''' % int(c.id)
         cursor.execute(sql)
-        db.commit()
 
         sql = '''delete from Address where fkIdContact = %i''' % int(c.id)
         cursor.execute(sql)
@@ -609,8 +619,7 @@ def searchBy(field, value):
 
     sql += " order by lastName"
 
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     elems = []
 
@@ -644,8 +653,7 @@ def returnListAddress(cursor, id):
             s.fkIdCountry = co.id
             ''' % (id)
 
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     listElem = []
 
@@ -681,8 +689,7 @@ def returnListEmailPhone(cursor, field, id):
             p.fkIdType = t.id  
             ''' % (id)
 
-    cursor.execute(sql)
-    res = cursor.fetchall()
+    res = executeSQL(sql, cursor)
 
     listElem = list()
 
